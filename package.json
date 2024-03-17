@@ -1,0 +1,68 @@
+{
+  "name": "@graph-pocket/graph-canvas",
+  "version": "0.0.0",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "napi": {
+    "name": "graph-canvas",
+    "triples": {
+      "defaults": false,
+      "additional": [
+        "aarch64-apple-darwin",
+        "aarch64-linux-android",
+        "aarch64-unknown-linux-gnu",
+        "aarch64-unknown-linux-musl",
+        "armv7-unknown-linux-gnueabihf",
+        "x86_64-unknown-linux-gnu"
+      ]
+    }
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@jimp/core": "0.22.10",
+    "@jimp/custom": "0.22.10",
+    "@jimp/jpeg": "0.22.10",
+    "@jimp/png": "0.22.10",
+    "@napi-rs/cli": "^2.18.0",
+    "@octokit/rest": "20.0.2",
+    "@swc-node/register": "1.8.0",
+    "@swc/core": "1.4.0",
+    "@taplo/cli": "0.7.0",
+    "@types/lodash": "4.14.202",
+    "@types/node": "20.11.16",
+    "@types/semver": "7",
+    "ava": "^6.0.1",
+    "benny": "3.7.1",
+    "canvas": "^2.11.2",
+    "canvaskit-wasm": "0.39.1",
+    "colorette": "2.0.20",
+    "conventional-changelog-cli": "4.1.0",
+    "echarts": "5.4.3",
+    "lodash": "4.17.21",
+    "npm-run-all2": "6.1.2",
+    "pinst": "3.0.0",
+    "png.js": "0.2.1",
+    "prettier": "3.2.5",
+    "pretty-bytes": "6.1.1",
+    "semver": "7.5.4",
+    "skia-canvas": "1.0.1",
+    "table": "6.8.1",
+    "typescript": "5.3.3"
+  },
+  "ava": {
+    "timeout": "3m"
+  },
+  "engines": {
+    "node": ">= 10"
+  },
+  "scripts": {
+    "artifacts": "napi artifacts",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "prepublishOnly": "napi prepublish -t npm",
+    "test": "ava",
+    "universal": "napi universal",
+    "version": "napi version"
+  },
+  "packageManager": "yarn@4.1.1"
+}

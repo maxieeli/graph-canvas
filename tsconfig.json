@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+      "target": "ES2018",
+      "strict": true,
+      "moduleResolution": "node",
+      "module": "CommonJS",
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "esModuleInterop": true,
+      "allowSyntheticDefaultImports": true,
+      "allowJs": true,
+      "outDir": "dist",
+      "sourceMap": true,
+      "lib": ["ESNext", "DOM"]
+    },
+    "exclude": ["node_modules", "depot_tools", "skia", "skia-c", "example", "target", "npm"]
+  }
+  
