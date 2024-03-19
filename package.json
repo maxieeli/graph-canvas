@@ -72,5 +72,12 @@
     "universal": "napi universal",
     "version": "napi version"
   },
+  "files": [
+    "index.d.ts",
+    "index.js",
+    "geometry.js",
+    "js-binding.js",
+    "load-image.js"
+  ],
   "packageManager": "yarn@4.1.1"
 }
