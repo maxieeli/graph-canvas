@@ -4,10 +4,10 @@ const { join } = require('path')
 const OWNER = 'Brooooooklyn'
 const REPO = 'canvas'
 
-const [FULL_HASH] =
-  process.env.NODE_ENV === 'ava' ? ['000000'] : execSync(`git submodule status skia`).toString('utf8').trim().split(' ')
+// const [FULL_HASH] =
+//   process.env.NODE_ENV === 'ava' ? ['000000'] : execSync(`git submodule status skia`).toString('utf8').trim().split(' ')
 
-const SHORT_HASH = FULL_HASH.substring(0, 8)
+const SHORT_HASH = '0.1'
 
 const TAG = `skia-${SHORT_HASH}`
 
