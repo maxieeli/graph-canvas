@@ -28,9 +28,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.android-arm64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.android-arm64.node')
+            nativeBinding = require('./graph-canvas.android-arm64.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-android-arm64')
+            nativeBinding = require('@graph-pocket/graph-canvas-android-arm64')
           }
         } catch (e) {
           loadError = e
@@ -40,9 +40,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.android-arm-eabi.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.android-arm-eabi.node')
+            nativeBinding = require('./graph-canvas.android-arm-eabi.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-android-arm-eabi')
+            nativeBinding = require('@graph-pocket/graph-canvas-android-arm-eabi')
           }
         } catch (e) {
           loadError = e
@@ -58,9 +58,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.win32-x64-msvc.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.win32-x64-msvc.node')
+            nativeBinding = require('./graph-canvas.win32-x64-msvc.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-win32-x64-msvc')
+            nativeBinding = require('@graph-pocket/graph-canvas-win32-x64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -70,9 +70,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.win32-ia32-msvc.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.win32-ia32-msvc.node')
+            nativeBinding = require('./graph-canvas.win32-ia32-msvc.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-win32-ia32-msvc')
+            nativeBinding = require('@graph-pocket/graph-canvas-win32-ia32-msvc')
           }
         } catch (e) {
           loadError = e
@@ -82,9 +82,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.win32-arm64-msvc.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.win32-arm64-msvc.node')
+            nativeBinding = require('./graph-canvas.win32-arm64-msvc.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-win32-arm64-msvc')
+            nativeBinding = require('@graph-pocket/graph-canvas-win32-arm64-msvc')
           }
         } catch (e) {
           loadError = e
@@ -100,9 +100,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.darwin-x64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.darwin-x64.node')
+            nativeBinding = require('./graph-canvas.darwin-x64.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-darwin-x64')
+            nativeBinding = require('@graph-pocket/graph-canvas-darwin-x64')
           }
         } catch (e) {
           loadError = e
@@ -112,9 +112,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.darwin-arm64.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.darwin-arm64.node')
+            nativeBinding = require('./graph-canvas.darwin-arm64.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-darwin-arm64')
+            nativeBinding = require('@graph-pocket/graph-canvas-darwin-arm64')
           }
         } catch (e) {
           loadError = e
@@ -131,9 +131,9 @@ switch (platform) {
     localFileExisted = existsSync(join(__dirname, 'skia.freebsd-x64.node'))
     try {
       if (localFileExisted) {
-        nativeBinding = require('./skia.freebsd-x64.node')
+        nativeBinding = require('./graph-canvas.freebsd-x64.node')
       } else {
-        nativeBinding = require('@napi-rs/canvas-freebsd-x64')
+        nativeBinding = require('@graph-pocket/graph-canvas-freebsd-x64')
       }
     } catch (e) {
       loadError = e
@@ -146,9 +146,9 @@ switch (platform) {
           localFileExisted = existsSync(join(__dirname, 'skia.linux-x64-musl.node'))
           try {
             if (localFileExisted) {
-              nativeBinding = require('./skia.linux-x64-musl.node')
+              nativeBinding = require('./graph-canvas.linux-x64-musl.node')
             } else {
-              nativeBinding = require('@napi-rs/canvas-linux-x64-musl')
+              nativeBinding = require('@graph-pocket/graph-canvas-linux-x64-musl')
             }
           } catch (e) {
             loadError = e
@@ -157,9 +157,9 @@ switch (platform) {
           localFileExisted = existsSync(join(__dirname, 'skia.linux-x64-gnu.node'))
           try {
             if (localFileExisted) {
-              nativeBinding = require('./skia.linux-x64-gnu.node')
+              nativeBinding = require('./graph-canvas.linux-x64-gnu.node')
             } else {
-              nativeBinding = require('@napi-rs/canvas-linux-x64-gnu')
+              nativeBinding = require('@graph-pocket/graph-canvas-linux-x64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -171,9 +171,9 @@ switch (platform) {
           localFileExisted = existsSync(join(__dirname, 'skia.linux-arm64-musl.node'))
           try {
             if (localFileExisted) {
-              nativeBinding = require('./skia.linux-arm64-musl.node')
+              nativeBinding = require('./graph-canvas.linux-arm64-musl.node')
             } else {
-              nativeBinding = require('@napi-rs/canvas-linux-arm64-musl')
+              nativeBinding = require('@graph-pocket/graph-canvas-linux-arm64-musl')
             }
           } catch (e) {
             loadError = e
@@ -182,9 +182,9 @@ switch (platform) {
           localFileExisted = existsSync(join(__dirname, 'skia.linux-arm64-gnu.node'))
           try {
             if (localFileExisted) {
-              nativeBinding = require('./skia.linux-arm64-gnu.node')
+              nativeBinding = require('./graph-canvas.linux-arm64-gnu.node')
             } else {
-              nativeBinding = require('@napi-rs/canvas-linux-arm64-gnu')
+              nativeBinding = require('@graph-pocket/graph-canvas-linux-arm64-gnu')
             }
           } catch (e) {
             loadError = e
@@ -195,9 +195,9 @@ switch (platform) {
         localFileExisted = existsSync(join(__dirname, 'skia.linux-arm-gnueabihf.node'))
         try {
           if (localFileExisted) {
-            nativeBinding = require('./skia.linux-arm-gnueabihf.node')
+            nativeBinding = require('./graph-canvas.linux-arm-gnueabihf.node')
           } else {
-            nativeBinding = require('@napi-rs/canvas-linux-arm-gnueabihf')
+            nativeBinding = require('@graph-pocket/graph-canvas-linux-arm-gnueabihf')
           }
         } catch (e) {
           loadError = e
