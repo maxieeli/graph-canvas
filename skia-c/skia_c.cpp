@@ -17,8 +17,11 @@
 #define MAX_LAYOUT_WIDTH 100000
 #define HANGING_AS_PERCENT_OF_ASCENT 80
 
-extern "C" {
-  void SkStrSplit(const char* str, const char* delimiters, skia_private::TArray<SkString>* out) {
+extern "C"
+{
+  void SkStrSplit(const char* str,
+                const char* delimiters,
+                skia_private::TArray<SkString>* out) {
     // Skip any delimiters.
     str += strspn(str, delimiters);
     if (!*str) {
@@ -41,7 +44,8 @@ extern "C" {
     }
   }
 
-  static SkSamplingOptions SamplingOptionsFromFQ(int fq) {
+  static SkSamplingOptions SamplingOptionsFromFQ(int fq)
+  {
     switch (fq)
     {
     case 3:
@@ -57,59 +61,62 @@ extern "C" {
     return SkSamplingOptions(SkFilterMode::kNearest, SkMipmapMode::kNone);
   }
 
-  static SkMatrix conv_from_transform(const skiac_transform &c_ts) {
-    return SkMatrix::MakeAll(
-      c_ts.a,
-      c_ts.c,
-      c_ts.e,
-      c_ts.b,
-      c_ts.d,
-      c_ts.f,
-      0, 0, 1
-    );
+  static SkMatrix conv_from_transform(const skiac_transform &c_ts)
+  {
+    return SkMatrix::MakeAll(c_ts.a, c_ts.c, c_ts.e,
+                             c_ts.b, c_ts.d, c_ts.f,
+                             0, 0, 1);
   }
 
-  static skiac_transform conv_to_transform(const SkMatrix &matrix) {
+  static skiac_transform conv_to_transform(const SkMatrix &matrix)
+  {
     return skiac_transform{
-      matrix.getScaleX(),
-      matrix.getSkewY(), // Yes, inverted.
-      matrix.getSkewX(), // Skia uses such order for some reasons.
-      matrix.getScaleY(),
-      matrix.getTranslateX(),
-      matrix.getTranslateY(),
+        matrix.getScaleX(),
+        matrix.getSkewY(), // Yes, inverted.
+        matrix.getSkewX(), // Skia uses such order for some reasons.
+        matrix.getScaleY(),
+        matrix.getTranslateX(),
+        matrix.getTranslateY(),
     };
   }
 
-  void skiac_clear_all_cache() {
+  void skiac_clear_all_cache()
+  {
     SkGraphics::PurgeAllCaches();
   }
 
   // Surface
 
-  static SkSurface *skiac_surface_create(int width, int height, SkAlphaType alphaType, uint8_t cs) {
+  static SkSurface *skiac_surface_create(int width, int height, SkAlphaType alphaType, uint8_t cs)
+  {
     // Init() is idempotent, so can be called more than once with no adverse effect.
     SkGraphics::Init();
     auto color_space = COLOR_SPACE_CAST;
     auto info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType, alphaType, color_space);
     auto surface = SkSurfaces::Raster(info);
-    if (surface) {
+    if (surface)
+    {
       // The surface ref count will equal one after the pointer is returned.
       return surface.release();
     }
-    else {
+    else
+    {
       return nullptr;
     }
   }
 
-  void skiac_surface_create_svg(skiac_svg_surface *c_surface, int w, int h, int alphaType, uint32_t flag, uint8_t cs) {
+  void skiac_surface_create_svg(skiac_svg_surface *c_surface, int w, int h, int alphaType, uint32_t flag, uint8_t cs)
+  {
     auto w_stream = new SkDynamicMemoryWStream();
 
     auto canvas = SkSVGCanvas::Make(SkRect::MakeWH(w, h), w_stream, flag);
-    if (!canvas.get()) {
+    if (!canvas.get())
+    {
       return;
     }
     auto surface = skiac_surface_create(w, h, (SkAlphaType)alphaType, cs);
-    if (!surface) {
+    if (!surface)
+    {
       return;
     }
     c_surface->stream = reinterpret_cast<skiac_w_memory_stream *>(w_stream);
@@ -117,95 +124,113 @@ extern "C" {
     c_surface->canvas = reinterpret_cast<skiac_canvas *>(canvas.release());
   }
 
-  skiac_surface *skiac_surface_create_rgba_premultiplied(int width, int height, uint8_t cs) {
+  skiac_surface *skiac_surface_create_rgba_premultiplied(int width, int height, uint8_t cs)
+  {
     return reinterpret_cast<skiac_surface *>(
-      skiac_surface_create(width, height, kPremul_SkAlphaType, cs)
-    );
+        skiac_surface_create(width, height, kPremul_SkAlphaType, cs));
   }
 
-  skiac_surface *skiac_surface_create_rgba(int width, int height, uint8_t cs) {
+  skiac_surface *skiac_surface_create_rgba(int width, int height, uint8_t cs)
+  {
     return reinterpret_cast<skiac_surface *>(
-      skiac_surface_create(width, height, kUnpremul_SkAlphaType, cs)
-    );
+        skiac_surface_create(width, height, kUnpremul_SkAlphaType, cs));
   }
 
-  bool skiac_surface_save(skiac_surface *c_surface, const char *path) {
+  bool skiac_surface_save(skiac_surface *c_surface, const char *path)
+  {
     auto image = SURFACE_CAST->makeImageSnapshot();
     auto data = SkPngEncoder::Encode(nullptr, image.release(), SkPngEncoder::Options());
-    if (data) {
+    if (data)
+    {
       SkFILEWStream stream(path);
-      if (stream.write(data->data(), data->size())) {
+      if (stream.write(data->data(), data->size()))
+      {
         stream.flush();
         return true;
       }
     }
+
     return false;
   }
 
-  void skiac_surface_destroy(skiac_surface *c_surface) {
+  void skiac_surface_destroy(skiac_surface *c_surface)
+  {
     // SkSurface is ref counted.
     SURFACE_CAST->unref();
   }
 
   skiac_surface *skiac_surface_copy_rgba(
-    skiac_surface *c_surface,
-    uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t cs
-  ) {
+      skiac_surface *c_surface,
+      uint32_t x, uint32_t y, uint32_t width, uint32_t height, uint8_t cs)
+  {
     // x, y, width, height are source rectangle coordinates.
     auto copy = skiac_surface_create((int)width, (int)height, kUnpremul_SkAlphaType, cs);
-    if (!copy) {
+    if (!copy)
+    {
       return nullptr;
     }
+
     SkPaint paint;
     paint.setAlpha(SK_AlphaOPAQUE);
+
     const auto sampling = SkSamplingOptions(SkCubicResampler::Mitchell());
     // The original surface draws itself to the copy's canvas.
     SURFACE_CAST->draw(copy->getCanvas(), -(SkScalar)x, -(SkScalar)y, sampling, &paint);
+
     return reinterpret_cast<skiac_surface *>(copy);
   }
 
-  int skiac_surface_get_width(skiac_surface *c_surface) {
+  int skiac_surface_get_width(skiac_surface *c_surface)
+  {
     return SURFACE_CAST->width();
   }
 
-  int skiac_surface_get_height(skiac_surface *c_surface) {
+  int skiac_surface_get_height(skiac_surface *c_surface)
+  {
     return SURFACE_CAST->height();
   }
 
-  skiac_canvas *skiac_surface_get_canvas(skiac_surface *c_surface) {
+  skiac_canvas *skiac_surface_get_canvas(skiac_surface *c_surface)
+  {
     return reinterpret_cast<skiac_canvas *>(SURFACE_CAST->getCanvas());
   }
 
-  void skiac_surface_read_pixels(skiac_surface *c_surface, skiac_surface_data *data) {
+  void skiac_surface_read_pixels(skiac_surface *c_surface, skiac_surface_data *data)
+  {
     data->ptr = nullptr;
     data->size = 0;
 
     SkPixmap pixmap;
-    if (SURFACE_CAST->peekPixels(&pixmap)) {
+    if (SURFACE_CAST->peekPixels(&pixmap))
+    {
       data->ptr = static_cast<uint8_t *>(pixmap.writable_addr());
       data->size = pixmap.computeByteSize();
     }
   }
 
-  bool skiac_surface_read_pixels_rect(skiac_surface *c_surface, uint8_t *data, int x, int y, int w, int h, uint8_t cs) {
+  bool skiac_surface_read_pixels_rect(skiac_surface *c_surface, uint8_t *data, int x, int y, int w, int h, uint8_t cs)
+  {
     auto color_space = COLOR_SPACE_CAST;
     auto image_info = SkImageInfo::Make(w, h, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType, color_space);
     auto result = SURFACE_CAST->readPixels(image_info, data, w * 4, x, y);
     return result;
   }
 
-  void skiac_surface_png_data(skiac_surface *c_surface, skiac_sk_data *data) {
+  void skiac_surface_png_data(skiac_surface *c_surface, skiac_sk_data *data)
+  {
     auto image = SURFACE_CAST->makeImageSnapshot().release();
     auto png_data = SkPngEncoder::Encode(nullptr, image, SkPngEncoder::Options());
     image->unref();
-    if (png_data) {
+    if (png_data)
+    {
       data->ptr = png_data->bytes();
       data->size = png_data->size();
       data->data = reinterpret_cast<skiac_data *>(png_data.release());
     }
   }
 
-  void skiac_surface_encode_data(skiac_surface *c_surface, skiac_sk_data *data, int format, int quality) {
+  void skiac_surface_encode_data(skiac_surface *c_surface, skiac_sk_data *data, int format, int quality)
+  {
     auto image = SURFACE_CAST->makeImageSnapshot().release();
     sk_sp<SkData> encoded_data;
     if (format == int(SkEncodedImageFormat::kJPEG)) {
@@ -221,18 +246,21 @@ extern "C" {
       encoded_data = SkWebpEncoder::Encode(nullptr, image, options);
     }
     image->unref();
-    if (encoded_data) {
+    if (encoded_data)
+    {
       data->ptr = const_cast<uint8_t *>(encoded_data->bytes());
       data->size = encoded_data->size();
       data->data = reinterpret_cast<skiac_data *>(encoded_data.release());
     }
   }
 
-  int skiac_surface_get_alpha_type(skiac_surface *c_surface) {
+  int skiac_surface_get_alpha_type(skiac_surface *c_surface)
+  {
     return SURFACE_CAST->imageInfo().alphaType();
   }
 
-  void skiac_surface_get_bitmap(skiac_surface *c_surface, skiac_bitmap_info *info) {
+  void skiac_surface_get_bitmap(skiac_surface *c_surface, skiac_bitmap_info *info)
+  {
     auto image = SURFACE_CAST->makeImageSnapshot();
     auto bitmap = new SkBitmap();
     auto image_info = image->imageInfo();
@@ -245,58 +273,67 @@ extern "C" {
 
   // Canvas
 
-  void skiac_canvas_clear(skiac_canvas *c_canvas, uint32_t color) {
+  void skiac_canvas_clear(skiac_canvas *c_canvas, uint32_t color)
+  {
     CANVAS_CAST->clear(static_cast<SkColor>(color));
   }
 
-  void skiac_canvas_set_transform(skiac_canvas *c_canvas, skiac_matrix *c_matrix) {
+  void skiac_canvas_set_transform(skiac_canvas *c_canvas, skiac_matrix *c_matrix)
+  {
     CANVAS_CAST->setMatrix(*MATRIX_CAST);
   }
 
-  void skiac_canvas_concat(skiac_canvas *c_canvas, skiac_matrix *c_matrix) {
+  void skiac_canvas_concat(skiac_canvas *c_canvas, skiac_matrix *c_matrix)
+  {
     CANVAS_CAST->concat(*MATRIX_CAST);
   }
 
-  void skiac_canvas_scale(skiac_canvas *c_canvas, float sx, float sy) {
+  void skiac_canvas_scale(skiac_canvas *c_canvas, float sx, float sy)
+  {
     CANVAS_CAST->scale(sx, sy);
   }
 
-  void skiac_canvas_translate(skiac_canvas *c_canvas, float dx, float dy) {
+  void skiac_canvas_translate(skiac_canvas *c_canvas, float dx, float dy)
+  {
     CANVAS_CAST->translate(dx, dy);
   }
 
-  void skiac_canvas_rotate(skiac_canvas *c_canvas, float degrees) {
+  void skiac_canvas_rotate(skiac_canvas *c_canvas, float degrees)
+  {
     CANVAS_CAST->rotate(degrees);
   }
 
-  skiac_matrix *skiac_canvas_get_total_transform_matrix(skiac_canvas *c_canvas) {
+  skiac_matrix *skiac_canvas_get_total_transform_matrix(skiac_canvas *c_canvas)
+  {
     auto martix = CANVAS_CAST->getTotalMatrix();
     return reinterpret_cast<skiac_matrix *>(new SkMatrix(martix));
   }
 
-  skiac_transform skiac_canvas_get_total_transform(skiac_canvas *c_canvas) {
+  skiac_transform skiac_canvas_get_total_transform(skiac_canvas *c_canvas)
+  {
     return conv_to_transform(CANVAS_CAST->getTotalMatrix());
   }
 
-  void skiac_canvas_draw_color(skiac_canvas *c_canvas, float r, float g, float b, float a) {
+  void skiac_canvas_draw_color(skiac_canvas *c_canvas, float r, float g, float b, float a)
+  {
     CANVAS_CAST->drawColor(SkColor4f{r, g, b, a});
   }
 
   void skiac_canvas_draw_image(
-    skiac_canvas *c_canvas,
-    skiac_bitmap *c_bitmap,
-    float sx,
-    float sy,
-    float s_width,
-    float s_height,
-    float dx,
-    float dy,
-    float d_width,
-    float d_height,
-    bool enable_smoothing,
-    int filter_quality,
-    skiac_paint *c_paint
-  ) {
+      skiac_canvas *c_canvas,
+      skiac_bitmap *c_bitmap,
+      float sx,
+      float sy,
+      float s_width,
+      float s_height,
+      float dx,
+      float dy,
+      float d_width,
+      float d_height,
+      bool enable_smoothing,
+      int filter_quality,
+      skiac_paint *c_paint)
+  {
     const auto src_rect = SkRect::MakeXYWH(sx, sy, s_width, s_height);
     const auto dst_rect = SkRect::MakeXYWH(dx, dy, d_width, d_height);
     auto sk_image = SkImages::RasterFromBitmap(*BITMAP_CAST);
@@ -306,27 +343,28 @@ extern "C" {
     CANVAS_CAST->drawImageRect(sk_image, src_rect, dst_rect, sampling, paint, SkCanvas::kFast_SrcRectConstraint);
   }
 
-  void skiac_canvas_draw_path(skiac_canvas *c_canvas, skiac_path *c_path, skiac_paint *c_paint) {
+  void skiac_canvas_draw_path(skiac_canvas *c_canvas, skiac_path *c_path, skiac_paint *c_paint)
+  {
     CANVAS_CAST->drawPath(*PATH_CAST, *PAINT_CAST);
   }
 
   void skiac_canvas_draw_rect(
-    skiac_canvas *c_canvas,
-    float x, float y, float w, float h,
-    skiac_paint *c_paint,
-  ) {
+      skiac_canvas *c_canvas,
+      float x, float y, float w, float h,
+      skiac_paint *c_paint)
+  {
     CANVAS_CAST->drawRect(SkRect::MakeXYWH(x, y, w, h), *PAINT_CAST);
   }
 
   void skiac_canvas_draw_surface(
-    skiac_canvas *c_canvas,
-    skiac_surface *c_surface,
-    float left,
-    float top,
-    uint8_t alpha,
-    int blend_mode,
-    int filter_quality,
-  ) {
+      skiac_canvas *c_canvas,
+      skiac_surface *c_surface,
+      float left,
+      float top,
+      uint8_t alpha,
+      int blend_mode,
+      int filter_quality)
+  {
     auto image = SURFACE_CAST->makeImageSnapshot();
     SkPaint paint;
     paint.setAlpha(alpha);
@@ -336,18 +374,18 @@ extern "C" {
   }
 
   void skiac_canvas_draw_surface_rect(
-    skiac_canvas *c_canvas,
-    skiac_surface *c_surface,
-    float sx,
-    float sy,
-    float sw,
-    float sh,
-    float dx,
-    float dy,
-    float dw,
-    float dh,
-    int filter_quality,
-  ) {
+      skiac_canvas *c_canvas,
+      skiac_surface *c_surface,
+      float sx,
+      float sy,
+      float sw,
+      float sh,
+      float dx,
+      float dy,
+      float dw,
+      float dh,
+      int filter_quality)
+  {
     auto image = SURFACE_CAST->makeImageSnapshot();
     auto src = SkRect::MakeXYWH(sx, sy, sw, sh);
     auto dst = SkRect::MakeXYWH(dx, dy, dw, dh);
@@ -356,27 +394,27 @@ extern "C" {
   }
 
   void skiac_canvas_get_line_metrics_or_draw_text(
-    const char *text,
-    size_t text_len,
-    float max_width,
-    float x,
-    float y,
-    float canvas_width,
-    skiac_font_collection *c_collection,
-    float font_size,
-    int weight,
-    int stretch,
-    int slant,
-    const char *font_family,
-    int baseline,
-    int align,
-    int direction,
-    float letter_spacing,
-    float world_spacing,
-    skiac_paint *c_paint,
-    skiac_canvas *c_canvas,
-    skiac_line_metrics *c_line_metrics,
-  ) {
+      const char *text,
+      size_t text_len,
+      float max_width,
+      float x,
+      float y,
+      float canvas_width,
+      skiac_font_collection *c_collection,
+      float font_size,
+      int weight,
+      int stretch,
+      int slant,
+      const char *font_family,
+      int baseline,
+      int align,
+      int direction,
+      float letter_spacing,
+      float world_spacing,
+      skiac_paint *c_paint,
+      skiac_canvas *c_canvas,
+      skiac_line_metrics *c_line_metrics)
+  {
     auto font_collection = c_collection->collection;
     auto font_style = SkFontStyle(weight, stretch, (SkFontStyle::Slant)slant);
     auto text_direction = (TextDirection)direction;
@@ -384,7 +422,8 @@ extern "C" {
     SkStrSplit(font_family, ",", &families);
     TextStyle text_style;
     std::vector<SkString> families_vec;
-    for (auto family : families) {
+    for (auto family : families)
+    {
       families_vec.emplace_back(family);
     }
     text_style.setFontFamilies(families_vec);
@@ -426,100 +465,117 @@ extern "C" {
     auto ascent = first_char_bounds.fTop;
     auto last_char_bounds = bounds[glyphs_size - 1];
     auto last_char_pos_x = run.positionX(glyphs_size - 1);
-    for (auto &box : text_box) {
+    for (auto &box : text_box)
+    {
       line_width += box.rect.width();
     }
-    for (size_t i = 1; i <= glyphs_size - 1; ++i) {
+    for (size_t i = 1; i <= glyphs_size - 1; ++i)
+    {
       auto char_bounds = bounds[i];
       auto char_bottom = char_bounds.fBottom;
-      if (char_bottom > descent) {
+      if (char_bottom > descent)
+      {
         descent = char_bottom;
       }
       auto char_top = char_bounds.fTop;
-      if (char_top < ascent) {
+      if (char_top < ascent)
+      {
         ascent = char_top;
       }
     }
     auto alphabetic_baseline = paragraph->getAlphabeticBaseline();
     auto css_baseline = (CssBaseline)baseline;
     SkScalar baseline_offset = 0;
-    switch (css_baseline) {
-      case CssBaseline::Top:
-        baseline_offset = -alphabetic_baseline - font_metrics.fAscent - font_metrics.fUnderlinePosition - font_metrics.fUnderlineThickness;
-        break;
-      case CssBaseline::Hanging:
-        // https://github.com/chromium/chromium/blob/104.0.5092.1/third_party/blink/renderer/core/html/canvas/text_metrics.cc#L21-L25
-        // According to
-        // http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
-        // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of
-        // the ascender height"
-        baseline_offset = -alphabetic_baseline - font_metrics.fAscent * HANGING_AS_PERCENT_OF_ASCENT / 100.0;
-        break;
-      case CssBaseline::Middle:
-        baseline_offset = -paragraph->getHeight() / 2;
-        break;
-      case CssBaseline::Alphabetic:
-        baseline_offset = -alphabetic_baseline;
-        break;
-      case CssBaseline::Ideographic:
-        baseline_offset = -paragraph->getIdeographicBaseline();
-        break;
-      case CssBaseline::Bottom:
-        baseline_offset = -alphabetic_baseline + font_metrics.fStrikeoutPosition + font_metrics.fStrikeoutThickness;
-        break;
+    switch (css_baseline)
+    {
+    case CssBaseline::Top:
+      baseline_offset = -alphabetic_baseline - font_metrics.fAscent - font_metrics.fUnderlinePosition - font_metrics.fUnderlineThickness;
+      break;
+    case CssBaseline::Hanging:
+      // https://github.com/chromium/chromium/blob/104.0.5092.1/third_party/blink/renderer/core/html/canvas/text_metrics.cc#L21-L25
+      // According to
+      // http://wiki.apache.org/xmlgraphics-fop/LineLayout/AlignmentHandling
+      // "FOP (Formatting Objects Processor) puts the hanging baseline at 80% of
+      // the ascender height"
+      baseline_offset = -alphabetic_baseline - font_metrics.fAscent * HANGING_AS_PERCENT_OF_ASCENT / 100.0;
+      break;
+    case CssBaseline::Middle:
+      baseline_offset = -paragraph->getHeight() / 2;
+      break;
+    case CssBaseline::Alphabetic:
+      baseline_offset = -alphabetic_baseline;
+      break;
+    case CssBaseline::Ideographic:
+      baseline_offset = -paragraph->getIdeographicBaseline();
+      break;
+    case CssBaseline::Bottom:
+      baseline_offset = -alphabetic_baseline + font_metrics.fStrikeoutPosition + font_metrics.fStrikeoutThickness;
+      break;
     };
 
     auto line_center = line_width / 2.0f;
     float paint_x;
     float offset_x = 0.0;
-    switch ((TextAlign)align) {
-      case TextAlign::kLeft:
+    switch ((TextAlign)align)
+    {
+    case TextAlign::kLeft:
+      paint_x = x;
+      break;
+    case TextAlign::kCenter:
+      paint_x = x - line_center;
+      offset_x = line_center;
+      break;
+    case TextAlign::kRight:
+      paint_x = x - line_width;
+      offset_x = line_width;
+      break;
+    // Unreachable
+    case TextAlign::kJustify:
+      paint_x = x;
+      break;
+    case TextAlign::kStart:
+      if (text_direction == TextDirection::kLtr)
+      {
         paint_x = x;
-        break;
-      case TextAlign::kCenter:
-        paint_x = x - line_center;
-        offset_x = line_center;
-        break;
-      case TextAlign::kRight:
+      }
+      else
+      {
         paint_x = x - line_width;
         offset_x = line_width;
-        break;
-      // Unreachable
-      case TextAlign::kJustify:
+      }
+      break;
+    case TextAlign::kEnd:
+      if (text_direction == TextDirection::kRtl)
+      {
         paint_x = x;
-        break;
-      case TextAlign::kStart:
-        if (text_direction == TextDirection::kLtr) {
-          paint_x = x;
-        } else {
-          paint_x = x - line_width;
-          offset_x = line_width;
-        }
-        break;
-      case TextAlign::kEnd:
-        if (text_direction == TextDirection::kRtl) {
-          paint_x = x;
-        } else {
-          paint_x = x - line_width;
-          offset_x = line_width;
-        }
-        break;
+      }
+      else
+      {
+        paint_x = x - line_width;
+        offset_x = line_width;
+      }
+      break;
     };
 
-    if (c_canvas) {
+    if (c_canvas)
+    {
       auto need_scale = line_width > max_width;
       float ratio = need_scale ? max_width / line_width : 1.0;
-      if (need_scale) {
+      if (need_scale)
+      {
         CANVAS_CAST->save();
         CANVAS_CAST->scale(ratio, 1.0);
       }
       auto paint_y = y + baseline_offset;
       paint_x = paint_x - letter_spacing / 2;
       paragraph->paint(CANVAS_CAST, need_scale ? (paint_x + (1 - ratio) * offset_x) / ratio : paint_x, paint_y);
-      if (need_scale) {
+      if (need_scale)
+      {
         CANVAS_CAST->restore();
       }
-    } else {
+    }
+    else
+    {
       auto offset = -baseline_offset - alphabetic_baseline;
       c_line_metrics->ascent = -ascent + offset;
       c_line_metrics->descent = descent - offset;
@@ -533,38 +589,46 @@ extern "C" {
     delete paragraph;
   }
 
-  void skiac_canvas_reset_transform(skiac_canvas *c_canvas) {
+  void skiac_canvas_reset_transform(skiac_canvas *c_canvas)
+  {
     CANVAS_CAST->resetMatrix();
   }
 
-  void skiac_canvas_clip_rect(skiac_canvas *c_canvas, float x, float y, float w, float h) {
+  void skiac_canvas_clip_rect(skiac_canvas *c_canvas, float x, float y, float w, float h)
+  {
     auto rect = SkRect::MakeXYWH(x, y, w, h);
     CANVAS_CAST->clipRect(rect, true);
   }
 
-  void skiac_canvas_clip_path(skiac_canvas *c_canvas, skiac_path *c_path) {
+  void skiac_canvas_clip_path(skiac_canvas *c_canvas, skiac_path *c_path)
+  {
     auto path = reinterpret_cast<SkPath *>(c_path);
     CANVAS_CAST->clipPath(*path, true);
   }
 
-  void skiac_canvas_save(skiac_canvas *c_canvas) {
+  void skiac_canvas_save(skiac_canvas *c_canvas)
+  {
     CANVAS_CAST->save();
   }
 
-  void skiac_canvas_restore(skiac_canvas *c_canvas) {
+  void skiac_canvas_restore(skiac_canvas *c_canvas)
+  {
     CANVAS_CAST->restore();
   }
 
-  void skiac_canvas_reset(skiac_canvas *c_canvas) {
+  void skiac_canvas_reset(skiac_canvas *c_canvas)
+  {
     CANVAS_CAST->restoreToCount(1);
   }
 
-  void skiac_canvas_write_pixels(skiac_canvas *c_canvas, int width, int height, uint8_t *pixels, size_t row_bytes, int x, int y) {
+  void skiac_canvas_write_pixels(skiac_canvas *c_canvas, int width, int height, uint8_t *pixels, size_t row_bytes, int x, int y)
+  {
     auto info = SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType);
     CANVAS_CAST->writePixels(info, pixels, row_bytes, x, y);
   }
 
-  void skiac_canvas_write_pixels_dirty(skiac_canvas *c_canvas, int width, int height, uint8_t *pixels, size_t row_bytes, size_t length, float x, float y, float dirty_x, float dirty_y, float dirty_width, float dirty_height, uint8_t cs) {
+  void skiac_canvas_write_pixels_dirty(skiac_canvas *c_canvas, int width, int height, uint8_t *pixels, size_t row_bytes, size_t length, float x, float y, float dirty_x, float dirty_y, float dirty_width, float dirty_height, uint8_t cs)
+  {
     auto color_space = COLOR_SPACE_CAST;
     auto info = SkImageInfo::Make(width, height, SkColorType::kRGBA_8888_SkColorType, SkAlphaType::kUnpremul_SkAlphaType, color_space);
     auto data = SkData::MakeFromMalloc(pixels, length);
@@ -582,121 +646,154 @@ extern "C" {
 
 
   // Paint
-  skiac_paint *skiac_paint_create() {
+
+  skiac_paint *skiac_paint_create()
+  {
     return reinterpret_cast<skiac_paint *>(new SkPaint());
   }
 
-  skiac_paint *skiac_paint_clone(skiac_paint *c_paint) {
+  skiac_paint *skiac_paint_clone(skiac_paint *c_paint)
+  {
     auto cloned_paint = new SkPaint(*PAINT_CAST);
     return reinterpret_cast<skiac_paint *>(cloned_paint);
   }
 
-  void skiac_paint_destroy(skiac_paint *c_paint) {
+  void skiac_paint_destroy(skiac_paint *c_paint)
+  {
     // Will unref() Shader and PathEffect.
+
     // SkPaint is not ref counted, so explicitly delete.
     delete PAINT_CAST;
   }
 
-  void skiac_paint_set_color(skiac_paint *c_paint, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+  void skiac_paint_set_color(skiac_paint *c_paint, uint8_t r, uint8_t g, uint8_t b, uint8_t a)
+  {
     PAINT_CAST->setARGB(a, r, g, b);
   }
 
-  void skiac_paint_set_alpha(skiac_paint *c_paint, uint8_t a) {
+  void skiac_paint_set_alpha(skiac_paint *c_paint, uint8_t a)
+  {
     PAINT_CAST->setAlpha(a);
   }
 
-  uint8_t skiac_paint_get_alpha(skiac_paint *c_paint) {
+  uint8_t skiac_paint_get_alpha(skiac_paint *c_paint)
+  {
     return PAINT_CAST->getAlpha();
   }
 
-  void skiac_paint_set_anti_alias(skiac_paint *c_paint, bool aa) {
+  void skiac_paint_set_anti_alias(skiac_paint *c_paint, bool aa)
+  {
     PAINT_CAST->setAntiAlias(aa);
   }
 
-  void skiac_paint_set_blend_mode(skiac_paint *c_paint, int blend_mode) {
+  void skiac_paint_set_blend_mode(skiac_paint *c_paint, int blend_mode)
+  {
     PAINT_CAST->setBlendMode((SkBlendMode)blend_mode);
   }
 
-  int skiac_paint_get_blend_mode(skiac_paint *c_paint) {
+  int skiac_paint_get_blend_mode(skiac_paint *c_paint)
+  {
     return (int)PAINT_CAST->getBlendMode_or(SkBlendMode::kSrcOver);
   }
 
-  void skiac_paint_set_shader(skiac_paint *c_paint, skiac_shader *c_shader) {
+  void skiac_paint_set_shader(skiac_paint *c_paint, skiac_shader *c_shader)
+  {
     sk_sp<SkShader> shader(reinterpret_cast<SkShader *>(c_shader));
+
     // setShader accepts a smart pointer which will be destructed on delete.
     // Therefore we have to reference the object once more, to keep it valid in Rust.
     shader->ref();
+
     PAINT_CAST->setShader(shader);
   }
 
-  void skiac_paint_set_path_effect(skiac_paint *c_paint, skiac_path_effect *c_path_effect) {
+  void skiac_paint_set_path_effect(skiac_paint *c_paint, skiac_path_effect *c_path_effect)
+  {
     sk_sp<SkPathEffect> pathEffect(reinterpret_cast<SkPathEffect *>(c_path_effect));
+
     // setPathEffect accepts a smart pointer which will be destructed on delete.
     // Therefore we have to reference the object once more, to keep it valid in Rust.
     pathEffect->ref();
+
     PAINT_CAST->setPathEffect(pathEffect);
   }
 
-  void skiac_paint_set_mask_filter(skiac_paint *c_paint, skiac_mask_filter *c_mask_filter) {
+  void skiac_paint_set_mask_filter(skiac_paint *c_paint, skiac_mask_filter *c_mask_filter)
+  {
     sk_sp<SkMaskFilter> maskFilter(reinterpret_cast<SkMaskFilter *>(c_mask_filter));
     maskFilter->ref();
     PAINT_CAST->setMaskFilter(maskFilter);
   }
 
-  void skiac_paint_set_image_filter(skiac_paint *c_paint, skiac_image_filter *c_image_filter) {
+  void skiac_paint_set_image_filter(skiac_paint *c_paint, skiac_image_filter *c_image_filter)
+  {
     sk_sp<SkImageFilter> imageFilter(reinterpret_cast<SkImageFilter *>(c_image_filter));
     imageFilter->ref();
+
     PAINT_CAST->setImageFilter(imageFilter);
   }
 
-  void skiac_paint_set_style(skiac_paint *c_paint, int style) {
+  void skiac_paint_set_style(skiac_paint *c_paint, int style)
+  {
     PAINT_CAST->setStyle((SkPaint::Style)style);
   }
 
-  void skiac_paint_set_stroke_width(skiac_paint *c_paint, float width) {
+  void skiac_paint_set_stroke_width(skiac_paint *c_paint, float width)
+  {
     PAINT_CAST->setStrokeWidth(width);
   }
 
-  float skiac_paint_get_stroke_width(skiac_paint *c_paint) {
+  float skiac_paint_get_stroke_width(skiac_paint *c_paint)
+  {
     return PAINT_CAST->getStrokeWidth();
   }
 
-  void skiac_paint_set_stroke_cap(skiac_paint *c_paint, int cap) {
+  void skiac_paint_set_stroke_cap(skiac_paint *c_paint, int cap)
+  {
     PAINT_CAST->setStrokeCap((SkPaint::Cap)cap);
   }
 
-  int skiac_paint_get_stroke_cap(skiac_paint *c_paint) {
+  int skiac_paint_get_stroke_cap(skiac_paint *c_paint)
+  {
     return PAINT_CAST->getStrokeCap();
   }
 
-  void skiac_paint_set_stroke_join(skiac_paint *c_paint, uint8_t join) {
+  void skiac_paint_set_stroke_join(skiac_paint *c_paint, uint8_t join)
+  {
     PAINT_CAST->setStrokeJoin((SkPaint::Join)join);
   }
 
-  uint8_t skiac_paint_get_stroke_join(skiac_paint *c_paint) {
+  uint8_t skiac_paint_get_stroke_join(skiac_paint *c_paint)
+  {
     return PAINT_CAST->getStrokeJoin();
   }
 
-  void skiac_paint_set_stroke_miter(skiac_paint *c_paint, float miter) {
+  void skiac_paint_set_stroke_miter(skiac_paint *c_paint, float miter)
+  {
     PAINT_CAST->setStrokeMiter(miter);
   }
 
-  float skiac_paint_get_stroke_miter(skiac_paint *c_paint) {
+  float skiac_paint_get_stroke_miter(skiac_paint *c_paint)
+  {
     return PAINT_CAST->getStrokeMiter();
   }
 
   // Path
-  skiac_path *skiac_path_create() {
+
+  skiac_path *skiac_path_create()
+  {
     return reinterpret_cast<skiac_path *>(new SkPath());
   }
 
-  skiac_path *skiac_path_from_svg(char *svg_path) {
+  skiac_path *skiac_path_from_svg(char *svg_path)
+  {
     auto path = new SkPath();
     SkParsePath::FromSVGString(svg_path, path);
     return reinterpret_cast<skiac_path *>(path);
   }
 
-  skiac_path *skiac_path_clone(skiac_path *c_path) {
+  skiac_path *skiac_path_clone(skiac_path *c_path)
+  {
     auto new_path = new SkPath(*PATH_CAST);
     return reinterpret_cast<skiac_path *>(new_path);
   }
@@ -721,22 +818,26 @@ extern "C" {
     return reinterpret_cast<skiac_picture *>(picture.release());
   }
 
-  void skiac_path_swap(skiac_path *c_path, skiac_path *other_path) {
+  void skiac_path_swap(skiac_path *c_path, skiac_path *other_path)
+  {
     auto other = reinterpret_cast<SkPath *>(other_path);
     PATH_CAST->swap(*other);
   }
 
-  void skiac_add_path(skiac_path *c_path, skiac_path *other_path, skiac_matrix *c_matrix) {
+  void skiac_add_path(skiac_path *c_path, skiac_path *other_path, skiac_matrix *c_matrix)
+  {
     auto path = PATH_CAST;
     path->addPath(*reinterpret_cast<SkPath *>(other_path), *MATRIX_CAST, SkPath::AddPathMode::kExtend_AddPathMode);
   }
 
-  bool skiac_path_op(skiac_path *c_path_one, skiac_path *c_path_two, int op) {
+  bool skiac_path_op(skiac_path *c_path_one, skiac_path *c_path_two, int op)
+  {
     auto path_one = reinterpret_cast<SkPath *>(c_path_one);
     return Op(*path_one, *reinterpret_cast<SkPath *>(c_path_two), (SkPathOp)op, path_one);
   }
 
-  void skiac_path_to_svg_string(skiac_path *c_path, skiac_string *c_string) {
+  void skiac_path_to_svg_string(skiac_path *c_path, skiac_string *c_string)
+  {
     auto string = SkParsePath::ToSVGString(*PATH_CAST);
     auto length = string.size();
     auto result_string = new SkString(length);
@@ -746,15 +847,18 @@ extern "C" {
     c_string->sk_string = result_string;
   }
 
-  bool skiac_path_simplify(skiac_path *c_path) {
+  bool skiac_path_simplify(skiac_path *c_path)
+  {
     return Simplify(*PATH_CAST, PATH_CAST);
   }
 
-  bool skiac_path_as_winding(skiac_path *c_path) {
+  bool skiac_path_as_winding(skiac_path *c_path)
+  {
     return AsWinding(*PATH_CAST, PATH_CAST);
   }
 
-  bool skiac_path_stroke(skiac_path *c_path, int cap, uint8_t join, float width, float miter_limit) {
+  bool skiac_path_stroke(skiac_path *c_path, int cap, uint8_t join, float width, float miter_limit)
+  {
     auto path = PATH_CAST;
     SkPaint p;
     p.setStyle(SkPaint::kStroke_Style);
@@ -767,7 +871,8 @@ extern "C" {
     return skpathutils::FillPathWithPaint(*const_path, const_paint, path);
   }
 
-  void skiac_path_compute_tight_bounds(skiac_path *c_path, skiac_rect *c_rect) {
+  void skiac_path_compute_tight_bounds(skiac_path *c_path, skiac_rect *c_rect)
+  {
     auto rect = PATH_CAST->computeTightBounds();
     c_rect->left = rect.fLeft;
     c_rect->top = rect.fTop;
@@ -775,7 +880,8 @@ extern "C" {
     c_rect->bottom = rect.fBottom;
   }
 
-  void skiac_path_get_bounds(skiac_path *c_path, skiac_rect *c_rect) {
+  void skiac_path_get_bounds(skiac_path *c_path, skiac_rect *c_rect)
+  {
     auto rect = PATH_CAST->getBounds();
     c_rect->left = rect.fLeft;
     c_rect->top = rect.fTop;
@@ -783,106 +889,128 @@ extern "C" {
     c_rect->bottom = rect.fBottom;
   }
 
-  bool skiac_path_trim(skiac_path *c_path, float start_t, float stop_t, bool is_complement) {
+  bool skiac_path_trim(skiac_path *c_path, float start_t, float stop_t, bool is_complement)
+  {
     auto mode = is_complement ? SkTrimPathEffect::Mode::kInverted : SkTrimPathEffect::Mode::kNormal;
     auto pe = SkTrimPathEffect::Make(start_t, stop_t, mode);
-    if (!pe) {
+    if (!pe)
+    {
       return false;
     }
     SkStrokeRec rec(SkStrokeRec::InitStyle::kHairline_InitStyle);
-    if (pe->filterPath(PATH_CAST, *PATH_CAST, &rec, nullptr)) {
+    if (pe->filterPath(PATH_CAST, *PATH_CAST, &rec, nullptr))
+    {
       return true;
     }
     return false;
   }
 
-  bool skiac_path_dash(skiac_path *c_path, float on, float off, float phase) {
+  bool skiac_path_dash(skiac_path *c_path, float on, float off, float phase)
+  {
     float intervals[] = {on, off};
     auto pe = SkDashPathEffect::Make(intervals, 2, phase);
-    if (!pe) {
+    if (!pe)
+    {
       return false;
     }
     SkStrokeRec rec(SkStrokeRec::InitStyle::kHairline_InitStyle);
-    if (pe->filterPath(PATH_CAST, *PATH_CAST, &rec, nullptr)) {
+    if (pe->filterPath(PATH_CAST, *PATH_CAST, &rec, nullptr))
+    {
       return true;
     }
     return false;
   }
 
-  bool skiac_path_equals(skiac_path *c_path, skiac_path *other_path) {
+  bool skiac_path_equals(skiac_path *c_path, skiac_path *other_path)
+  {
     return *PATH_CAST == *reinterpret_cast<SkPath *>(other_path);
   }
 
-  void skiac_path_destroy(skiac_path *c_path) {
+  void skiac_path_destroy(skiac_path *c_path)
+  {
     // SkPath is NOT ref counted
     delete PATH_CAST;
   }
 
-  void skiac_path_set_fill_type(skiac_path *c_path, int type) {
+  void skiac_path_set_fill_type(skiac_path *c_path, int type)
+  {
     PATH_CAST->setFillType((SkPathFillType)type);
   }
 
-  int skiac_path_get_fill_type(skiac_path *c_path) {
+  int skiac_path_get_fill_type(skiac_path *c_path)
+  {
     return (int)PATH_CAST->getFillType();
   }
 
-  void skiac_path_arc_to_tangent(skiac_path *c_path, float x1, float y1, float x2, float y2, float radius) {
+  void skiac_path_arc_to_tangent(skiac_path *c_path, float x1, float y1, float x2, float y2, float radius)
+  {
     PATH_CAST->arcTo(x1, y1, x2, y2, radius);
   }
 
-  void skiac_path_arc_to(skiac_path *c_path, float left, float top, float right, float bottom, float startAngle, float sweepAngle, bool forceMoveTo) {
+  void skiac_path_arc_to(skiac_path *c_path, float left, float top, float right, float bottom, float startAngle, float sweepAngle, bool forceMoveTo)
+  {
     SkRect rect = SkRect::MakeLTRB(left, top, right, bottom);
     PATH_CAST->arcTo(rect, startAngle, sweepAngle, forceMoveTo);
   }
 
-  void skiac_path_move_to(skiac_path *c_path, float x, float y) {
+  void skiac_path_move_to(skiac_path *c_path, float x, float y)
+  {
     PATH_CAST->moveTo(x, y);
   }
 
-  void skiac_path_line_to(skiac_path *c_path, float x, float y) {
+  void skiac_path_line_to(skiac_path *c_path, float x, float y)
+  {
     PATH_CAST->lineTo(x, y);
   }
 
   void skiac_path_cubic_to(
-    skiac_path *c_path,
-    float x1, float y1, float x2, float y2, float x3, float y3
-  ) {
+      skiac_path *c_path,
+      float x1, float y1, float x2, float y2, float x3, float y3)
+  {
     PATH_CAST->cubicTo(x1, y1, x2, y2, x3, y3);
   }
 
-  void skiac_path_quad_to(skiac_path *c_path, float cpx, float cpy, float x, float y) {
+  void skiac_path_quad_to(skiac_path *c_path, float cpx, float cpy, float x, float y)
+  {
     PATH_CAST->quadTo(cpx, cpy, x, y);
   }
 
-  void skiac_path_close(skiac_path *c_path) {
+  void skiac_path_close(skiac_path *c_path)
+  {
     PATH_CAST->close();
   }
 
-  void skiac_path_add_rect(skiac_path *c_path, float x, float y, float width, float height) {
+  void skiac_path_add_rect(skiac_path *c_path, float x, float y, float width, float height)
+  {
     SkRect rect = SkRect::MakeXYWH(x, y, width, height);
     PATH_CAST->addRect(rect);
   }
 
-  void skiac_path_add_circle(skiac_path *c_path, float x, float y, float r) {
+  void skiac_path_add_circle(skiac_path *c_path, float x, float y, float r)
+  {
     PATH_CAST->addCircle(x, y, r);
   }
 
-  skiac_path *skiac_path_transform(skiac_path *c_path, skiac_matrix *c_matrix) {
+  skiac_path *skiac_path_transform(skiac_path *c_path, skiac_matrix *c_matrix)
+  {
     auto new_path = new SkPath();
     PATH_CAST->transform(*MATRIX_CAST, new_path, SkApplyPerspectiveClip::kYes);
     return reinterpret_cast<skiac_path *>(new_path);
   }
 
-  void skiac_path_transform_self(skiac_path *c_path, skiac_matrix *c_matrix) {
+  void skiac_path_transform_self(skiac_path *c_path, skiac_matrix *c_matrix)
+  {
     SkMatrix matrix = *reinterpret_cast<SkMatrix *>(c_matrix);
     PATH_CAST->transform(matrix, SkApplyPerspectiveClip::kYes);
   }
 
-  bool skiac_path_is_empty(skiac_path *c_path) {
+  bool skiac_path_is_empty(skiac_path *c_path)
+  {
     return PATH_CAST->isEmpty();
   }
 
-  bool skiac_path_hit_test(skiac_path *c_path, float x, float y, int type) {
+  bool skiac_path_hit_test(skiac_path *c_path, float x, float y, int type)
+  {
     auto prev_fill = PATH_CAST->getFillType();
     PATH_CAST->setFillType((SkPathFillType)type);
     auto result = PATH_CAST->contains(x, y);
@@ -890,7 +1018,8 @@ extern "C" {
     return result;
   }
 
-  bool skiac_path_stroke_hit_test(skiac_path *c_path, float x, float y, float stroke_w) {
+  bool skiac_path_stroke_hit_test(skiac_path *c_path, float x, float y, float stroke_w)
+  {
     auto path = PATH_CAST;
     auto prev_fill = path->getFillType();
     path->setFillType(SkPathFillType::kWinding);
@@ -903,28 +1032,32 @@ extern "C" {
     auto precision = 0.3; // Based on config in Chromium
     const SkPath *const_path = path;
     const SkPaint const_paint = paint;
-    if (skpathutils::FillPathWithPaint(*const_path, const_paint, &traced_path, nullptr, precision)) {
+    if (skpathutils::FillPathWithPaint(*const_path, const_paint, &traced_path, nullptr, precision))
+    {
       result = traced_path.contains(x, y);
     }
-    else {
+    else
+    {
       result = path->contains(x, y);
     }
+
     path->setFillType(prev_fill);
     return result;
   }
 
   void skiac_path_round_rect(
-    skiac_path *c_path,
-    SkScalar x,
-    SkScalar y,
-    SkScalar width,
-    SkScalar height,
-    SkScalar *radii,
-    bool clockwise,
-  ) {
+      skiac_path *c_path,
+      SkScalar x,
+      SkScalar y,
+      SkScalar width,
+      SkScalar height,
+      SkScalar *radii,
+      bool clockwise)
+  {
     auto path = PATH_CAST;
     SkScalar radii_vec[8];
-    for (size_t i = 0; i < 4; i++) {
+    for (size_t i = 0; i < 4; i++)
+    {
       radii_vec[i * 2] = radii[i];
       radii_vec[i * 2 + 1] = radii[i];
     }
@@ -934,192 +1067,214 @@ extern "C" {
   }
 
   // PathEffect
-  skiac_path_effect *skiac_path_effect_make_dash_path(const float *intervals, int count, float phase) {
+
+  skiac_path_effect *skiac_path_effect_make_dash_path(const float *intervals, int count, float phase)
+  {
     auto effect = SkDashPathEffect::Make(intervals, count, phase).release();
-    if (effect) {
+    if (effect)
+    {
       return reinterpret_cast<skiac_path_effect *>(effect);
     }
-    else {
+    else
+    {
       return nullptr;
     }
   }
 
-  void skiac_path_effect_destroy(skiac_path_effect *c_path_effect) {
+  void skiac_path_effect_destroy(skiac_path_effect *c_path_effect)
+  {
     // SkPathEffect is ref counted.
     auto effect = reinterpret_cast<SkPathEffect *>(c_path_effect);
     effect->unref();
   }
 
   // Shader
+
   skiac_shader *skiac_shader_make_linear_gradient(
-    const skiac_point *c_points,
-    const uint32_t *colors,
-    const float *positions,
-    int count,
-    int tile_mode,
-    uint32_t flags,
-    skiac_transform c_ts,
-  ) {
+      const skiac_point *c_points,
+      const uint32_t *colors,
+      const float *positions,
+      int count,
+      int tile_mode,
+      uint32_t flags,
+      skiac_transform c_ts)
+  {
     const auto points = reinterpret_cast<const SkPoint *>(c_points);
     const auto skia_tile_mode = (SkTileMode)tile_mode;
     const auto ts = conv_from_transform(c_ts);
     auto shader = SkGradientShader::MakeLinear(
-      points,
-      colors,
-      positions,
-      count,
-      skia_tile_mode,
-      flags,
-      &ts
-    )
-    .release();
+                      points,
+                      colors,
+                      positions,
+                      count,
+                      skia_tile_mode,
+                      flags,
+                      &ts)
+                      .release();
 
-    if (shader) {
+    if (shader)
+    {
       return reinterpret_cast<skiac_shader *>(shader);
-    } else {
+    }
+    else
+    {
       return nullptr;
     }
   }
 
   skiac_shader *skiac_shader_make_radial_gradient(
-    skiac_point c_start_point,
-    float start_radius,
-    skiac_point c_end_point,
-    float end_radius,
-    const uint32_t *colors,
-    const float *positions,
-    int count,
-    int tile_mode,
-    uint32_t flags,
-    skiac_transform c_ts,
-  ) {
+      skiac_point c_start_point,
+      float start_radius,
+      skiac_point c_end_point,
+      float end_radius,
+      const uint32_t *colors,
+      const float *positions,
+      int count,
+      int tile_mode,
+      uint32_t flags,
+      skiac_transform c_ts)
+  {
     const SkPoint startPoint = {c_start_point.x, c_start_point.y};
     const SkPoint endPoint = {c_end_point.x, c_end_point.y};
     auto shader = SkGradientShader::MakeTwoPointConical(
-      startPoint,
-      start_radius,
-      endPoint,
-      end_radius,
-      colors,
-      positions,
-      count,
-      (SkTileMode)tile_mode,
-      flags,
-      nullptr
-    )
-    .release();
+                      startPoint,
+                      start_radius,
+                      endPoint,
+                      end_radius,
+                      colors,
+                      positions,
+                      count,
+                      (SkTileMode)tile_mode,
+                      flags,
+                      nullptr)
+                      .release();
 
-    if (shader) {
+    if (shader)
+    {
       return reinterpret_cast<skiac_shader *>(shader);
-    } else {
+    }
+    else
+    {
       return nullptr;
     }
   }
 
   skiac_shader *skiac_shader_make_conic_gradient(
-    SkScalar cx,
-    SkScalar cy,
-    SkScalar radius,
-    const uint32_t *colors,
-    const float *positions,
-    int count,
-    int tile_mode,
-    uint32_t flags,
-    skiac_transform c_ts,
-  ) {
+      SkScalar cx,
+      SkScalar cy,
+      SkScalar radius,
+      const uint32_t *colors,
+      const float *positions,
+      int count,
+      int tile_mode,
+      uint32_t flags,
+      skiac_transform c_ts)
+  {
     auto ts = conv_from_transform(c_ts);
     // Skia's sweep gradient angles are relative to the x-axis, not the y-axis.
     ts.preRotate(radius - 90.0, cx, cy);
     auto shader = SkGradientShader::MakeSweep(
-      cx,
-      cy,
-      colors,
-      positions,
-      count,
-      (SkTileMode)tile_mode,
-      radius,
-      360.0,
-      flags,
-      &ts
-    )
-    .release();
+                      cx,
+                      cy,
+                      colors,
+                      positions,
+                      count,
+                      (SkTileMode)tile_mode,
+                      radius,
+                      360.0,
+                      flags,
+                      &ts)
+                      .release();
 
-    if (shader) {
+    if (shader)
+    {
       return reinterpret_cast<skiac_shader *>(shader);
-    } else {
+    }
+    else
+    {
       return nullptr;
     }
   }
 
   skiac_shader *skiac_shader_make_from_surface_image(
-    skiac_surface *c_surface,
-    skiac_transform c_ts,
-    int filter_quality,
-  ) {
+      skiac_surface *c_surface,
+      skiac_transform c_ts,
+      int filter_quality)
+  {
     auto skia_tile_mode = SkTileMode::kRepeat;
     const auto ts = conv_from_transform(c_ts);
     const SkSamplingOptions sampling_options = SamplingOptionsFromFQ(filter_quality);
     sk_sp<SkImage> image = SURFACE_CAST->makeImageSnapshot();
     auto shader = image->makeShader(
-      skia_tile_mode,
-      skia_tile_mode,
-      sampling_options,
-      &ts
-    )
-    .release();
-    if (shader) {
+                           skia_tile_mode,
+                           skia_tile_mode,
+                           sampling_options,
+                           &ts)
+                      .release();
+
+    if (shader)
+    {
       return reinterpret_cast<skiac_shader *>(shader);
     }
     return nullptr;
   }
 
-  void skiac_shader_destroy(skiac_shader *c_shader) {
+  void skiac_shader_destroy(skiac_shader *c_shader)
+  {
     // SkShader is ref counted.
     auto shader = reinterpret_cast<SkShader *>(c_shader);
     shader->unref();
   }
 
-  skiac_matrix *skiac_matrix_create() {
+  skiac_matrix *skiac_matrix_create()
+  {
     return reinterpret_cast<skiac_matrix *>(new SkMatrix());
   }
 
-  skiac_matrix *skiac_matrix_new(float a, float b, float c, float d, float e, float f) {
+  skiac_matrix *skiac_matrix_new(float a, float b, float c, float d, float e, float f)
+  {
     auto m = new SkMatrix(SkMatrix::MakeAll(a, b, c, d, e, f, 0, 0, 1));
     return reinterpret_cast<skiac_matrix *>(m);
   }
 
-  skiac_matrix *skiac_matrix_from_ts(const skiac_transform *c_ts) {
+  skiac_matrix *skiac_matrix_from_ts(const skiac_transform *c_ts)
+  {
     auto matrix = conv_from_transform(*c_ts);
     auto m = new SkMatrix(matrix);
     return reinterpret_cast<skiac_matrix *>(m);
   }
 
-  skiac_matrix *skiac_matrix_create_rotated(float rotation, float x, float y) {
+  skiac_matrix *skiac_matrix_create_rotated(float rotation, float x, float y)
+  {
     auto matrix = new SkMatrix();
     matrix->setRotate(rotation, x, y);
     return reinterpret_cast<skiac_matrix *>(matrix);
   }
 
-  skiac_matrix *skiac_matrix_create_translated(float x, float y) {
+  skiac_matrix *skiac_matrix_create_translated(float x, float y)
+  {
     auto matrix = new SkMatrix();
     matrix->setTranslate(x, y);
     return reinterpret_cast<skiac_matrix *>(matrix);
   }
 
-  skiac_matrix *skiac_matrix_concat(skiac_matrix *c_matrix, skiac_matrix *other) {
+  skiac_matrix *skiac_matrix_concat(skiac_matrix *c_matrix, skiac_matrix *other)
+  {
     auto m = SkMatrix::Concat(*MATRIX_CAST, *reinterpret_cast<SkMatrix *>(other));
     auto r = new SkMatrix(m);
     return reinterpret_cast<skiac_matrix *>(r);
   }
 
-  skiac_matrix *skiac_matrix_multiply(skiac_matrix *c_matrix, skiac_matrix *other) {
+  skiac_matrix *skiac_matrix_multiply(skiac_matrix *c_matrix, skiac_matrix *other)
+  {
     auto m = *MATRIX_CAST;
     auto o = *reinterpret_cast<SkMatrix *>(other);
     auto r = new SkMatrix(o * m);
     return reinterpret_cast<skiac_matrix *>(r);
   }
 
-  void skiac_matrix_map_points_1(skiac_matrix *c_matrix, float x, float y, skiac_mapped_point *mapped_point) {
+  void skiac_matrix_map_points_1(skiac_matrix *c_matrix, float x, float y, skiac_mapped_point *mapped_point)
+  {
     SkPoint dst[1];
     auto p = SkPoint::Make(x, y);
     SkPoint src[] = {p};
@@ -1129,32 +1284,39 @@ extern "C" {
     mapped_point->y = dp.fY;
   }
 
-  skiac_matrix *skiac_matrix_clone(skiac_matrix *c_matrix) {
+  skiac_matrix *skiac_matrix_clone(skiac_matrix *c_matrix)
+  {
     return reinterpret_cast<skiac_matrix *>(new SkMatrix(*MATRIX_CAST));
   }
 
-  void skiac_matrix_pre_translate(skiac_matrix *c_matrix, float dx, float dy) {
+  void skiac_matrix_pre_translate(skiac_matrix *c_matrix, float dx, float dy)
+  {
     MATRIX_CAST->preTranslate(dx, dy);
   }
 
-  void skiac_matrix_pre_concat(skiac_matrix *c_matrix, skiac_matrix *other) {
+  void skiac_matrix_pre_concat(skiac_matrix *c_matrix, skiac_matrix *other)
+  {
     MATRIX_CAST->preConcat(*reinterpret_cast<SkMatrix *>(other));
   }
 
-  void skiac_matrix_pre_scale(skiac_matrix *c_matrix, float sx, float sy) {
+  void skiac_matrix_pre_scale(skiac_matrix *c_matrix, float sx, float sy)
+  {
     MATRIX_CAST->preScale(sx, sy);
   }
 
-  void skiac_matrix_pre_concat_transform(skiac_matrix *c_matrix, skiac_transform c_ts) {
+  void skiac_matrix_pre_concat_transform(skiac_matrix *c_matrix, skiac_transform c_ts)
+  {
     auto ts = conv_from_transform(c_ts);
     MATRIX_CAST->preConcat(ts);
   }
 
-  void skiac_matrix_pre_rotate(skiac_matrix *c_matrix, float degrees) {
+  void skiac_matrix_pre_rotate(skiac_matrix *c_matrix, float degrees)
+  {
     MATRIX_CAST->preRotate(degrees);
   }
 
-  void skiac_matrix_pre_rotate_x_y(skiac_matrix *c_matrix, float degrees, float x, float y) {
+  void skiac_matrix_pre_rotate_x_y(skiac_matrix *c_matrix, float degrees, float x, float y)
+  {
     MATRIX_CAST->preRotate(degrees, x, y);
   }
 

@@ -96,40 +96,52 @@ enum class CssBaseline
   Bottom,
 };
 
-class TypefaceFontProviderCustom : public TypefaceFontProvider {
-  public: explicit TypefaceFontProviderCustom(sk_sp<SkFontMgr> mgr) : font_mgr(std::move(mgr)) {}
+class TypefaceFontProviderCustom : public TypefaceFontProvider
+{
+public:
+  explicit TypefaceFontProviderCustom(sk_sp<SkFontMgr> mgr) : font_mgr(std::move(mgr))
+  {
+  }
 
   ~TypefaceFontProviderCustom(){};
 
-  sk_sp<SkTypeface> onLegacyMakeTypeface(const char family_name[], SkFontStyle style) const override {
-    if (!family_name) {
+  sk_sp<SkTypeface> onLegacyMakeTypeface(const char family_name[], SkFontStyle style) const override
+  {
+    if (!family_name)
+    {
       return nullptr;
     }
     auto style_set = this->onMatchFamily(family_name);
-    if (!style_set) {
+    if (!style_set)
+    {
       return nullptr;
     }
     auto tf = style_set->matchStyle(style);
-    if (!tf) {
+    if (!tf)
+    {
       return nullptr;
     }
     return sk_sp<SkTypeface>(tf);
   }
 
-  private: sk_sp<SkFontMgr> font_mgr;
+private:
+  sk_sp<SkFontMgr> font_mgr;
 };
 
-struct skiac_svg_surface {
+struct skiac_svg_surface
+{
   skiac_w_memory_stream *stream;
   skiac_surface *surface;
   skiac_canvas *canvas;
 };
 
-struct skiac_font_collection {
+struct skiac_font_collection
+{
   sk_sp<FontCollection> collection;
   sk_sp<SkFontMgr> font_mgr;
   sk_sp<TypefaceFontProviderCustom> assets;
-  skiac_font_collection() : collection(sk_make_sp<FontCollection>()), font_mgr(SkFontMgr_New_Custom_Directory(SK_FONT_FILE_PREFIX)), assets(sk_make_sp<TypefaceFontProviderCustom>(font_mgr)) {
+  skiac_font_collection() : collection(sk_make_sp<FontCollection>()), font_mgr(SkFontMgr_New_Custom_Directory(SK_FONT_FILE_PREFIX)), assets(sk_make_sp<TypefaceFontProviderCustom>(font_mgr))
+  {
     collection->setDefaultFontManager(SkFontMgr_New_Custom_Empty());
     collection->setAssetFontManager(font_mgr);
     collection->setDynamicFontManager(assets);
@@ -138,7 +150,8 @@ struct skiac_font_collection {
   }
 };
 
-struct skiac_line_metrics {
+struct skiac_line_metrics
+{
   float ascent;
   float descent;
   float left;
@@ -149,14 +162,16 @@ struct skiac_line_metrics {
   float alphabetic_baseline;
 };
 
-struct skiac_rect {
+struct skiac_rect
+{
   float left;
   float top;
   float right;
   float bottom;
 };
 
-struct skiac_transform {
+struct skiac_transform
+{
   float a;
   float b;
   float c;
@@ -165,23 +180,27 @@ struct skiac_transform {
   float f;
 };
 
-struct skiac_point {
+struct skiac_point
+{
   float x;
   float y;
 };
 
-struct skiac_surface_data {
+struct skiac_surface_data
+{
   uint8_t *ptr;
   size_t size;
 };
 
-struct skiac_bitmap_info {
+struct skiac_bitmap_info
+{
   skiac_bitmap *bitmap;
   int width;
   int height;
 };
 
-struct skiac_string {
+struct skiac_string
+{
   const char *ptr;
   size_t length;
   SkString *sk_string;
@@ -189,18 +208,21 @@ struct skiac_string {
 
 typedef void (*skiac_on_match_font_style)(int width, int weight, int slant, void *skiac_on_match_font_style_rust);
 
-struct skiac_sk_data {
+struct skiac_sk_data
+{
   const uint8_t *ptr;
   size_t size;
   skiac_data *data;
 };
 
-struct skiac_mapped_point {
+struct skiac_mapped_point
+{
   float x;
   float y;
 };
 
-extern "C" {
+extern "C"
+{
   void skiac_clear_all_cache();
   // Surface
   skiac_surface *skiac_surface_create_rgba_premultiplied(int width, int height, uint8_t cs);
