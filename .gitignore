@@ -198,5 +198,5 @@ Cargo.lock
 
 # /skia
 # /skia/
-/depot_tools
-/depot_tools/
+# /depot_tools
+# /depot_tools/
