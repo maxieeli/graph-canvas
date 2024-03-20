@@ -196,7 +196,7 @@ Cargo.lock
 
 *.node
 
-/skia
-/skia/
+# /skia
+# /skia/
 /depot_tools
 /depot_tools/
