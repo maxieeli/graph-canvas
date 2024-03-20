@@ -25,7 +25,7 @@ switch (platform) {
   case 'android':
     switch (arch) {
       case 'arm64':
-        localFileExisted = existsSync(join(__dirname, 'skia.android-arm64.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.android-arm64.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.android-arm64.node')
@@ -37,7 +37,7 @@ switch (platform) {
         }
         break
       case 'arm':
-        localFileExisted = existsSync(join(__dirname, 'skia.android-arm-eabi.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.android-arm-eabi.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.android-arm-eabi.node')
@@ -55,7 +55,7 @@ switch (platform) {
   case 'win32':
     switch (arch) {
       case 'x64':
-        localFileExisted = existsSync(join(__dirname, 'skia.win32-x64-msvc.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.win32-x64-msvc.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.win32-x64-msvc.node')
@@ -67,7 +67,7 @@ switch (platform) {
         }
         break
       case 'ia32':
-        localFileExisted = existsSync(join(__dirname, 'skia.win32-ia32-msvc.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.win32-ia32-msvc.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.win32-ia32-msvc.node')
@@ -79,7 +79,7 @@ switch (platform) {
         }
         break
       case 'arm64':
-        localFileExisted = existsSync(join(__dirname, 'skia.win32-arm64-msvc.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.win32-arm64-msvc.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.win32-arm64-msvc.node')
@@ -97,7 +97,7 @@ switch (platform) {
   case 'darwin':
     switch (arch) {
       case 'x64':
-        localFileExisted = existsSync(join(__dirname, 'skia.darwin-x64.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.darwin-x64.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.darwin-x64.node')
@@ -109,7 +109,7 @@ switch (platform) {
         }
         break
       case 'arm64':
-        localFileExisted = existsSync(join(__dirname, 'skia.darwin-arm64.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.darwin-arm64.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.darwin-arm64.node')
@@ -128,7 +128,7 @@ switch (platform) {
     if (arch !== 'x64') {
       throw new Error(`Unsupported architecture on FreeBSD: ${arch}`)
     }
-    localFileExisted = existsSync(join(__dirname, 'skia.freebsd-x64.node'))
+    localFileExisted = existsSync(join(__dirname, 'graph-canvas.freebsd-x64.node'))
     try {
       if (localFileExisted) {
         nativeBinding = require('./graph-canvas.freebsd-x64.node')
@@ -143,7 +143,7 @@ switch (platform) {
     switch (arch) {
       case 'x64':
         if (isMusl()) {
-          localFileExisted = existsSync(join(__dirname, 'skia.linux-x64-musl.node'))
+          localFileExisted = existsSync(join(__dirname, 'graph-canvas.linux-x64-musl.node'))
           try {
             if (localFileExisted) {
               nativeBinding = require('./graph-canvas.linux-x64-musl.node')
@@ -154,7 +154,7 @@ switch (platform) {
             loadError = e
           }
         } else {
-          localFileExisted = existsSync(join(__dirname, 'skia.linux-x64-gnu.node'))
+          localFileExisted = existsSync(join(__dirname, 'graph-canvas.linux-x64-gnu.node'))
           try {
             if (localFileExisted) {
               nativeBinding = require('./graph-canvas.linux-x64-gnu.node')
@@ -168,7 +168,7 @@ switch (platform) {
         break
       case 'arm64':
         if (isMusl()) {
-          localFileExisted = existsSync(join(__dirname, 'skia.linux-arm64-musl.node'))
+          localFileExisted = existsSync(join(__dirname, 'graph-canvas.linux-arm64-musl.node'))
           try {
             if (localFileExisted) {
               nativeBinding = require('./graph-canvas.linux-arm64-musl.node')
@@ -179,7 +179,7 @@ switch (platform) {
             loadError = e
           }
         } else {
-          localFileExisted = existsSync(join(__dirname, 'skia.linux-arm64-gnu.node'))
+          localFileExisted = existsSync(join(__dirname, 'graph-canvas.linux-arm64-gnu.node'))
           try {
             if (localFileExisted) {
               nativeBinding = require('./graph-canvas.linux-arm64-gnu.node')
@@ -192,7 +192,7 @@ switch (platform) {
         }
         break
       case 'arm':
-        localFileExisted = existsSync(join(__dirname, 'skia.linux-arm-gnueabihf.node'))
+        localFileExisted = existsSync(join(__dirname, 'graph-canvas.linux-arm-gnueabihf.node'))
         try {
           if (localFileExisted) {
             nativeBinding = require('./graph-canvas.linux-arm-gnueabihf.node')
